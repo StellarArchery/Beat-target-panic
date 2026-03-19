@@ -1,1 +1,142 @@
 # Beat-target-panic
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Archery Anti-Panic</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            text-align: center; 
+            background: #121212; 
+            color: white; 
+            margin: 0; 
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .header { width: 100%; display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .stat-box { background: #1e1e1e; padding: 10px 20px; border-radius: 10px; border: 1px solid #333; }
+        .label { display: block; font-size: 0.8rem; color: #888; text-transform: uppercase; }
+        .value { font-size: 1.8rem; font-weight: bold; }
+        
+        #coin { 
+            width: 150px; height: 150px; 
+            border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 1.4rem; font-weight: bold; 
+            border: 8px solid #444; 
+            background: linear-gradient(145deg, #222, #333); 
+            margin: 30px 0;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+
+        .instruction-card {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 15px;
+            min-height: 120px;
+            width: 90%;
+            max-width: 400px;
+            margin-bottom: 30px;
+            border-left: 5px solid #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            line-height: 1.4;
+        }
+
+        .roll-btn { 
+            background: #ffcc00; color: black; 
+            border: none; padding: 15px 40px; 
+            font-size: 1.2rem; font-weight: bold; 
+            border-radius: 50px; margin-bottom: 40px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 204, 0, 0.3);
+        }
+        .roll-btn:active { transform: scale(0.95); }
+
+        .controls { display: flex; gap: 40px; }
+        .btn { 
+            width: 80px; height: 80px; 
+            border-radius: 50%; border: none; 
+            font-size: 2.5rem; color: white; 
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .plus { background: #2e7d32; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.4); }
+        .minus { background: #c62828; box-shadow: 0 4px 10px rgba(198, 40, 40, 0.4); }
+        
+        /* Farby pre výsledky */
+        .color-head { border-color: #4caf50 !important; color: #4caf50; }
+        .color-tail { border-color: #2196f3 !important; color: #2196f3; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="stat-box">
+            <span class="label">Hody</span>
+            <span id="rolls" class="value">0</span>
+        </div>
+        <div class="stat-box">
+            <span class="label">Skóre</span>
+            <span id="score" class="value">0</span>
+        </div>
+    </div>
+
+    <div id="coin">?</div>
+
+    <div id="instruction" class="instruction-card">
+        Priprav sa na čiaru a klikni na HODIŤ MINCOU.
+    </div>
+
+    <button class="roll-btn" onclick="tossCoin()">HODIŤ MINCOU</button>
+
+    <div class="controls">
+        <button class="btn minus" onclick="updateScore(-1)">−</button>
+        <button class="btn plus" onclick="updateScore(1)">+</button>
+    </div>
+
+    <script>
+        let score = 0;
+        let rollsCount = 0;
+
+        function tossCoin() {
+            const coin = document.getElementById('coin');
+            const instruction = document.getElementById('instruction');
+            const isHead = Math.random() < 0.5;
+            
+            rollsCount++;
+            document.getElementById('rolls').innerText = rollsCount;
+
+            // Animácia
+            coin.style.transform = "scale(0.8) rotateY(180deg)";
+            coin.innerText = "...";
+            
+            setTimeout(() => {
+                coin.style.transform = "scale(1) rotateY(0deg)";
+                if (isHead) {
+                    coin.innerText = "HLAVA";
+                    coin.className = "color-head";
+                    instruction.innerHTML = "<strong>VÝSTREL:</strong> Sústreď sa na proces. Plynulý ťah až do prekvapivého výstrelu.";
+                } else {
+                    coin.innerText = "OREL";
+                    coin.className = "color-tail";
+                    instruction.innerHTML = "<strong>LET DOWN:</strong> Zamieriť na stred, drž 6 sekúnd s prstom na spúšti a potom v kľude zlož.";
+                }
+            }, 300);
+        }
+
+        function updateScore(value) {
+            score += value;
+            document.getElementById('score').innerText = score;
+        }
+    </script>
+</body>
+</html>
