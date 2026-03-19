@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Archery Anti-Panic</title>
+    <title>Archery Focus Tool</title>
     <style>
-        body {font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+        body { 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
             text-align: center; 
             background: #121212; 
             color: white; 
@@ -14,78 +15,102 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;}
-        .header { width: 100%; display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .stat-box { background: #1e1e1e; padding: 10px 20px; border-radius: 10px; border: 1px solid #333; }
-        .label { display: block; font-size: 0.8rem; color: #888; text-transform: uppercase; }
-        .value { font-size: 1.8rem; font-weight: bold; }
+            min-height: 100vh;
+        }
+        .lang-switch { margin-bottom: 20px; display: flex; gap: 10px; }
+        .lang-btn { background: #333; color: white; border: 1px solid #555; padding: 5px 15px; border-radius: 5px; cursor: pointer; }
+        .lang-btn.active { background: gold; color: black; border-color: gold; font-weight: bold; }
+
+        .header { width: 100%; max-width: 400px; display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .stat-box { background: #1e1e1e; padding: 10px 15px; border-radius: 10px; border: 1px solid #333; flex: 1; margin: 0 5px; position: relative; }
+        .label { display: block; font-size: 0.7rem; color: #888; text-transform: uppercase; }
+        .value { font-size: 1.5rem; font-weight: bold; }
         
-        #coin {width: 150px; height: 150px; 
+        #coin { 
+            width: 140px; height: 140px; 
             border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 1.4rem; font-weight: bold; 
-            border: 8px solid #444; 
+            font-size: 1.3rem; font-weight: bold; 
+            border: 6px solid #444; 
             background: linear-gradient(145deg, #222, #333); 
-            margin: 30px 0;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            transition: all 0.3s ease;}
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
 
-        .instruction-card {background: #1e1e1e;
+        .instruction-card {
+            background: #1e1e1e;
             padding: 20px;
             border-radius: 15px;
-            min-height: 120px;
+            min-height: 100px;
             width: 90%;
             max-width: 400px;
-            margin-bottom: 30px;
-            border-left: 5px solid #444;
+            margin-bottom: 25px;
+            border-left: 5px solid gold;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.1rem;
-            line-height: 1.4;}
+        }
 
-        .roll-btn { background: #ffcc00; color: black; 
+        .roll-btn { 
+            background: gold; color: black; 
             border: none; padding: 15px 40px; 
             font-size: 1.2rem; font-weight: bold; 
-            border-radius: 50px; margin-bottom: 40px;
+            border-radius: 50px; margin-bottom: 20px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255, 204, 0, 0.3);}
-        .roll-btn:active { transform: scale(0.95); }
+        }
+
+        .reset-btn {
+            background: transparent;
+            color: #666;
+            border: 1px solid #444;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
 
         .controls { display: flex; gap: 40px; }
-        .btn { width: 80px; height: 80px; 
+        .btn { 
+            width: 75px; height: 75px; 
             border-radius: 50%; border: none; 
-            font-size: 2.5rem; color: white; 
+            font-size: 2rem; color: white; 
             cursor: pointer;
-            display: flex; align-items: center; justify-content: center;}
-        .plus { background: #2e7d32; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.4); }
-        .minus { background: #c62828; box-shadow: 0 4px 10px rgba(198, 40, 40, 0.4); }
+            display: flex; align-items: center; justify-content: center;
+        }
+        .plus { background: #2e7d32; }
+        .minus { background: #c62828; }
         
-        /* Farby pre výsledky */
         .color-head { border-color: #4caf50 !important; color: #4caf50; }
         .color-tail { border-color: #2196f3 !important; color: #2196f3; }
     </style>
 </head>
 <body>
 
+    <div class="lang-switch">
+        <button class="lang-btn active" onclick="setLanguage('sk')" id="btn-sk">SK</button>
+        <button class="lang-btn" onclick="setLanguage('en')" id="btn-en">EN</button>
+    </div>
+
     <div class="header">
         <div class="stat-box">
-            <span class="label">Hody</span>
+            <span class="label" id="label-rolls">Hody</span>
             <span id="rolls" class="value">0</span>
         </div>
         <div class="stat-box">
-            <span class="label">Skóre</span>
+            <span class="label" id="label-score">Skóre</span>
             <span id="score" class="value">0</span>
         </div>
     </div>
 
     <div id="coin">?</div>
 
-    <div id="instruction" class="instruction-card">
-        Priprav sa na čiaru a klikni na HODIŤ MINCOU.
-    </div>
+    <div id="instruction" class="instruction-card">Priprav sa a hoď si...</div>
 
-    <button class="roll-btn" onclick="tossCoin()">HODIŤ MINCOU</button>
+    <button id="roll-btn-text" class="roll-btn" onclick="tossCoin()">HODIŤ MINCOU</button>
+    
+    <button id="reset-btn-text" class="reset-btn" onclick="resetGame()">RESETOVAŤ</button>
 
     <div class="controls">
         <button class="btn minus" onclick="updateScore(-1)">−</button>
@@ -95,27 +120,90 @@
     <script>
         let score = 0;
         let rollsCount = 0;
+        let currentLang = 'sk';
 
-        function tossCoin() {const coin = document.getElementById('coin');
+        const texty = {
+            sk: {
+                rolls: "Hody",
+                score: "Skóre",
+                ready: "Priprav sa a hoď si...",
+                rollBtn: "HODIŤ MINCOU",
+                resetBtn: "RESETOVAŤ",
+                head: "HLAVA",
+                tail: "OREL",
+                shotMsg: "<strong>VÝSTREL:</strong> Perfektný proces. Mantra 'Ťahám...', nechaj sa prekvapiť.",
+                downMsg: "<strong>LET DOWN:</strong> Mier na stred 6s s prstom na spúšti, potom zlož."
+            },
+            en: {
+                rolls: "Rolls",
+                score: "Score",
+                ready: "Get ready and roll...",
+                rollBtn: "TOSS COIN",
+                resetBtn: "RESET",
+                head: "HEADS",
+                tail: "TAILS",
+                shotMsg: "<strong>SHOT:</strong> Perfect process. Mantra 'Pulling...', let the shot surprise you.",
+                downMsg: "<strong>LET DOWN:</strong> Aim for 6s with finger on trigger, then let down safely."
+            }
+        };
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.getElementById('btn-sk').classList.toggle('active', lang === 'sk');
+            document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+            
+            document.getElementById('label-rolls').innerText = texty[lang].rolls;
+            document.getElementById('label-score').innerText = texty[lang].score;
+            document.getElementById('roll-btn-text').innerText = texty[lang].rollBtn;
+            document.getElementById('reset-btn-text').innerText = texty[lang].resetBtn;
+            
+            // If game hasn't started, update initial instruction
+            if (rollsCount === 0) {
+                document.getElementById('instruction').innerHTML = texty[lang].ready;
+            }
+        }
+
+        function tossCoin() {
+            const coin = document.getElementById('coin');
             const instruction = document.getElementById('instruction');
             const isHead = Math.random() < 0.5;
             
             rollsCount++;
             document.getElementById('rolls').innerText = rollsCount;
 
-            // Animácia
             coin.style.transform = "scale(0.8) rotateY(180deg)";
             coin.innerText = "...";
             
-            setTimeout(() => {coin.style.transform = "scale(1) rotateY(0deg)";
-                if (isHead) {coin.innerText = "HLAVA";
+            setTimeout(() => {
+                coin.style.transform = "scale(1) rotateY(0deg)";
+                if (isHead) {
+                    coin.innerText = texty[currentLang].head;
                     coin.className = "color-head";
-                    instruction.innerHTML = "<strong>VÝSTREL:</strong> Sústreď sa na proces. Plynulý ťah až do prekvapivého výstrelu.";} else {coin.innerText = "OREL";
+                    instruction.innerHTML = texty[currentLang].shotMsg;
+                } else {
+                    coin.innerText = texty[currentLang].tail;
                     coin.className = "color-tail";
-                    instruction.innerHTML = "<strong>LET DOWN:</strong> Zamieriť na stred, drž 6 sekúnd s prstom na spúšti a potom v kľude zlož.";}}, 300);}
+                    instruction.innerHTML = texty[currentLang].downMsg;
+                }
+            }, 300);
+        }
 
-        function updateScore(value) {score += value;
-            document.getElementById('score').innerText = score;}
+        function updateScore(value) {
+            score += value;
+            document.getElementById('score').innerText = score;
+        }
+
+        function resetGame() {
+            if (confirm(currentLang === 'sk' ? "Naozaj resetovať?" : "Really reset?")) {
+                score = 0;
+                rollsCount = 0;
+                document.getElementById('score').innerText = "0";
+                document.getElementById('rolls').innerText = "0";
+                document.getElementById('coin').innerText = "?";
+                document.getElementById('coin').className = "";
+                document.getElementById('instruction').innerHTML = texty[currentLang].ready;
+            }
+        }
     </script>
 </body>
 </html>
