@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archery Focus - Prevencia Target Panic</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #1a1a1a; color: white; margin: 0; padding: 20px; }
+        .stats { display: flex; justify-content: space-around; font-size: 1.2rem; margin-bottom: 20px; color: #aaa; }
+        .score-box { font-size: 2.5rem; font-weight: bold; color: #4caf50; }
+        .coin-area { height: 200px; display: flex; align-items: center; justify-content: center; margin: 30px 0; }
+        #coin { width: 120px; height: 120px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; border: 5px solid gold; background: #333; transition: transform 0.3s; }
+        .instruction { font-size: 1.3rem; margin: 20px; min-height: 60px; color: #ddd; }
+        .controls { display: flex; justify-content: center; gap: 30px; margin-top: 40px; }
+        .btn { padding: 20px 40px; font-size: 2rem; border: none; border-radius: 10px; cursor: pointer; color: white; }
+        .plus { background: #2e7d32; }
+        .minus { background: #c62828; }
+        .roll-btn { background: gold; color: black; padding: 15px 30px; font-size: 1.2rem; border-radius: 5px; margin-top: 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="stats">
+        <div>Hody: <span id="rolls">0</span></div>
+        <div>Skóre: <span id="score" class="score-box">0</span></div>
+    </div>
+
+    <div class="coin-area">
+        <div id="coin">?</div>
+    </div>
+
+    <div id="instruction" class="instruction">Klikni na mincu a priprav sa...</div>
+
+    <button class="roll-btn" onclick="tossCoin()">HODIŤ MINCOU</button>
+
+    <div class="controls">
+        <button class="btn minus" onclick="updateScore(-1)">−</button>
+        <button class="btn plus" onclick="updateScore(1)">+</button>
+    </div>
+
+    <script>
+        let score = 0;
+        let rolls = 0;
+
+        function tossCoin() {
+            const coin = document.getElementById('coin');
+            const instruction = document.getElementById('instruction');
+            const isHead = Math.random() < 0.5;
+            
+            rolls++;
+            document.getElementById('rolls').innerText = rolls;
+
+            // Efekt rotácie
+            coin.style.transform = "rotateY(360deg)";
+            
+            setTimeout(() => {
+                coin.style.transform = "rotateY(0deg)";
+                if (isHead) {
+                    coin.innerText = "HLAVA";
+                    coin.style.borderColor = "#4caf50";
+                    instruction.innerHTML = "<strong>VÝSTREL:</strong> Perfektný proces, mantra 'Ťahám...', nechaj sa prekvapiť.";
+                } else {
+                    coin.innerText = "OREL";
+                    coin.style.borderColor = "#2196f3";
+                    instruction.innerHTML = "<strong>LET DOWN:</strong> Zamieriť na stred, drž 6 sekúnd a v kľude zlož.";
+                }
+            }, 300);
+        }
+
+        function updateScore(value) {
+            score += value;
+            document.getElementById('score').innerText = score;
+        }
+    </script>
+</body>
+</html>
