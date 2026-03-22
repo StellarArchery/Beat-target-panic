@@ -1,23 +1,75 @@
-DOCTYPE html>
+<!DOCTYPE html>
 <html lang="sk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Archery App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Archery Focus Tool - Kocka</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #121212; color: white; padding: 20px; }
-        .stats { display: flex; justify-content: space-around; margin-bottom: 20px; }
+        body { font-family: sans-serif; text-align: center; background: #121212; color: white; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; }
+        .stats { display: flex; justify-content: space-around; width: 100%; max-width: 400px; margin-bottom: 20px; }
         .box { background: #1e1e1e; padding: 15px; border-radius: 10px; border: 1px solid #444; min-width: 80px; }
-        #coin { width: 120px; height: 120px; border-radius: 50%; border: 5px solid gold; margin: 20px auto; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; background: #222; }
-        #instruction { background: #1e1e1e; padding: 20px; border-radius: 10px; margin: 20px 0; min-height: 60px; border-left: 5px solid gold; }
-        .main-btn { background: gold; color: black; border: none; padding: 20px; width: 100%; max-width: 300px; font-size: 1.2rem; font-weight: bold; border-radius: 10px; cursor: pointer; }
-        .controls { display: flex; justify-content: center; gap: 40px; margin-top: 30px; }
-        .score-btn { width: 70px; height: 70px; border-radius: 50%; border: none; font-size: 2rem; color: white; cursor: pointer; }
+        .label { display: block; font-size: 0.7rem; color: #888; text-transform: uppercase; margin-bottom: 5px; }
+        .value { font-size: 1.8rem; font-weight: bold; }
+        
+        /* ŠTÝL KOCKY A JEJ KONTAJNERA */
+        .die-container {
+            perspective: 1000px; /* Pre 3D efekt */
+            width: 140px; height: 140px;
+            margin: 30px auto;
+        }
+
+        #die {
+            width: 100%; height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(0deg) rotateY(0deg);
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Plynulé dotočenie */
+        }
+
+        .die-face {
+            width: 100%; height: 100%;
+            position: absolute;
+            background: #222;
+            border: 4px solid gold;
+            border-radius: 15px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-weight: bold;
+            box-sizing: border-box;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            backface-visibility: hidden; /* Skryje zadné steny */
+        }
+
+        .face-text {
+            font-size: 1.4rem;
+            color: white;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+        }
+
+        /* Umiestnenie stien v 3D priestore */
+        .face-front { transform: rotateY(0deg) translateZ(70px); }
+        .face-back  { transform: rotateY(180deg) translateZ(70px); }
+        .face-right { transform: rotateY(90deg) translateZ(70px); }
+        .face-left  { transform: rotateY(-90deg) translateZ(70px); }
+        .face-top   { transform: rotateX(90deg) translateZ(70px); }
+        .face-bottom{ transform: rotateX(-90deg) translateZ(70px); }
+
+        /* Obsah stien: Striedame Výstrel a Mierenie pre 50/50 šancu */
+        .face-1, .face-3, .face-5 { border-color: #4caf50; }
+        .face-1 .face-text, .face-3 .face-text, .face-5 .face-text { color: #4caf50; }
+        .face-2, .face-4, .face-6 { border-color: #2196f3; }
+        .face-2 .face-text, .face-4 .face-text, .face-6 .face-text { color: #2196f3; }
+
+        #instruction { background: #1e1e1e; padding: 20px; border-radius: 10px; margin: 20px 0; min-height: 80px; width: 90%; max-width: 400px; border-left: 5px solid gold; line-height: 1.4; font-size: 1.1rem; }
+        .main-btn { background: gold; color: black; border: none; padding: 20px; width: 80%; max-width: 300px; font-size: 1.2rem; font-weight: bold; border-radius: 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .controls { display: flex; justify-content: center; gap: 50px; margin-top: 30px; }
+        .score-btn { width: 80px; height: 80px; border-radius: 50%; border: none; font-size: 2.5rem; color: white; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         .plus { background: green; }
         .minus { background: red; }
         .reset { background: none; border: 1px solid #444; color: #666; margin-top: 40px; padding: 5px 10px; cursor: pointer; }
+        .main-btn:active, .score-btn:active, .reset:active { opacity: 0.7; transform: scale(0.95); }
         .lang { margin-bottom: 20px; }
-        .lang button { background: #333; color: white; border: 1px solid #555; padding: 5px 10px; }
+        .lang button { background: #333; color: white; border: 1px solid #555; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
         .active { background: gold !important; color: black !important; }
     </style>
 </head>
@@ -29,14 +81,36 @@ DOCTYPE html>
     </div>
 
     <div class="stats">
-        <div class="box">Hody: <span id="hody">0</span></div>
-        <div class="box">Skóre: <span id="skore">0</span></div>
+        <div class="box"><span class="label">Hody</span><span id="hody" class="value">0</span></div>
+        <div class="box"><span class="label">Skóre</span><span id="skore" class="value">0</span></div>
     </div>
 
-    <div id="coin">?</div>
+    <div class="die-container">
+        <div id="die">
+            <div class="die-face face-front face-1">
+                <span class="face-text">VÝSTREL</span>
+            </div>
+            <div class="die-face face-back face-2">
+                <span class="face-text">MIERENIE</span>
+            </div>
+            <div class="die-face face-right face-3">
+                <span class="face-text">VÝSTREL</span>
+            </div>
+            <div class="die-face face-left face-4">
+                <span class="face-text">MIERENIE</span>
+            </div>
+            <div class="die-face face-top face-5">
+                <span class="face-text">VÝSTREL</span>
+            </div>
+            <div class="die-face face-bottom face-6">
+                <span class="face-text">MIERENIE</span>
+            </div>
+        </div>
+    </div>
+
     <div id="instruction">Priprav sa na čiaru...</div>
 
-    <button class="main-btn" onclick="hodit()">HODIŤ MINCOU</button>
+    <button class="main-btn" onclick="hodit()">HODIŤ KOCKOU</button>
 
     <div class="controls">
         <button class="score-btn minus" onclick="zmenBod(-1)">-</button>
@@ -47,12 +121,24 @@ DOCTYPE html>
 
     <script>
         var body = 0;
-        var hody = 0;
+        var hodyCount = 0;
         var jazyk = 'sk';
+        var rotaciaX = 0;
+        var rotaciaY = 0;
 
         var texty = {
-            sk: { head: "HLAVA", tail: "OREL", shot: "VÝSTREL: Perfektný proces. Mantra 'Ťahám...', prekvapivý výstrel.", down: "LET DOWN: Mier na stred 6s, drž pin a potom zlož.", roll: "HODIŤ MINCOU", reset: "Naozaj reset?" },
-            en: { head: "HEADS", tail: "TAILS", shot: "SHOT: Focus on process. Mantra 'Pulling...', surprise release.", down: "LET DOWN: Aim for 6s, hold the pin, then let down.", roll: "TOSS COIN", reset: "Really reset?" }
+            sk: { head: "VÝSTREL", tail: "MIERENIE", shot: "VÝSTREL: Sústreď sa na proces. Plynulý ťah až do prekvapivého výstrelu.", down: "MIERENIE: Zamieriť na stred, drž 6 sekúnd a v kľude zlož.", roll: "HODIŤ KOCKOU", reset: "Naozaj reset?", ready: "Priprav sa na čiaru..." },
+            en: { head: "SHOT", tail: "AIM", shot: "SHOT: Focus on process. Mantra 'Pulling...', surprise release.", down: "AIM: Aim for 6s, hold the pin, then let down safely.", roll: "ROLL DIE", reset: "Really reset?", ready: "Get ready..." }
+        };
+
+        // Definované rotácie pre každú stenu
+        var faceRotations = {
+            1: [0, 0], // Predná (Výstrel)
+            2: [0, 180], // Zadná (Mierenie)
+            3: [0, 270], // Pravá (Výstrel)
+            4: [0, 90], // Ľavá (Mierenie)
+            5: [270, 0], // Horná (Výstrel)
+            6: [90, 0] // Dolná (Mierenie)
         };
 
         function zmenJazyk(p) {
@@ -60,24 +146,37 @@ DOCTYPE html>
             document.getElementById('sk').className = (p == 'sk' ? 'active' : '');
             document.getElementById('en').className = (p == 'en' ? 'active' : '');
             document.querySelector('.main-btn').innerText = texty[p].roll;
+            if (hodyCount === 0) document.getElementById('instruction').innerText = texty[p].ready;
+            
+            // Update die face text to be more styled, just "VÝSTREL" / "MIERENIE"
+            // (We could keep "VÝSTREL" even in English for a pure copy-paste prompt if desired)
         }
 
         function hodit() {
-            hody++;
-            document.getElementById('hody').innerText = hody;
-            var vysledok = Math.random() < 0.5;
-            var c = document.getElementById('coin');
+            var c = document.getElementById('die');
             var i = document.getElementById('instruction');
+            
+            // 1. Získame náhodnú stenu od 1 po 6
+            var faceIndex = Math.floor(Math.random() * 6) + 1;
+            
+            // 2. Pridáme 720 stupňov (2 otočky) pre efekt točenia k finálnej rotácii
+            rotaciaX += (faceRotations[faceIndex][0] + 720);
+            rotaciaY += (faceRotations[faceIndex][1] + 720);
+            
+            // 3. Roztočíme kocku do finálnej polohy
+            c.style.transform = "rotateX(" + rotaciaX + "deg) rotateY(" + rotaciaY + "deg)";
+            
+            // Počkáme 600ms, kým animácia prebehne, potom ukážeme výsledok
+            setTimeout(function() {
+                hodyCount++;
+                document.getElementById('hody').innerText = hodyCount;
+                
+                // Určíme výsledok na základe steny (párna = Mierenie, nepárna = Výstrel)
+                var result = (faceIndex % 2 === 0 ? texty[jazyk].tail : texty[jazyk].head);
+                var resultMsg = (faceIndex % 2 === 0 ? texty[jazyk].down : texty[jazyk].shot);
 
-            if (vysledok) {
-                c.innerText = texty[jazyk].head;
-                c.style.borderColor = "green";
-                i.innerHTML = "<strong>" + texty[jazyk].shot + "</strong>";
-            } else {
-                c.innerText = texty[jazyk].tail;
-                c.style.borderColor = "blue";
-                i.innerHTML = "<strong>" + texty[jazyk].down + "</strong>";
-            }
+                i.innerHTML = "<strong>" + resultMsg + "</strong>";
+            }, 600);
         }
 
         function zmenBod(v) {
@@ -87,15 +186,13 @@ DOCTYPE html>
 
         function reset() {
             if (confirm(texty[jazyk].reset)) {
-                body = 0; hody = 0;
+                body = 0; hodyCount = 0; rotaciaX = 0; rotaciaY = 0;
                 document.getElementById('skore').innerText = "0";
                 document.getElementById('hody').innerText = "0";
-                document.getElementById('coin').innerText = "?";
-                document.getElementById('coin').style.borderColor = "gold";
-                document.getElementById('instruction').innerText = "...";
+                document.getElementById('instruction').innerText = texty[jazyk].ready;
+                document.getElementById('die').style.transform = "rotateX(0deg) rotateY(0deg)";
             }
         }
     </script>
 </body>
 </html>
-
