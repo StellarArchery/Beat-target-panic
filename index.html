@@ -3,73 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Archery Focus Tool - Kocka</title>
+    <title>Archery - Coin Flip</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #121212; color: white; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; }
+        body { font-family: sans-serif; text-align: center; background: #121212; color: white; padding: 20px; margin: 0; display: flex; flex-direction: column; align-items: center; }
         .stats { display: flex; justify-content: space-around; width: 100%; max-width: 400px; margin-bottom: 20px; }
         .box { background: #1e1e1e; padding: 15px; border-radius: 10px; border: 1px solid #444; min-width: 80px; }
-        .label { display: block; font-size: 0.7rem; color: #888; text-transform: uppercase; margin-bottom: 5px; }
+        .label { display: block; font-size: 0.7rem; color: #888; text-transform: uppercase; }
         .value { font-size: 1.8rem; font-weight: bold; }
-        
-        /* ŠTÝL KOCKY */
-        .die-container {
-            perspective: 1000px; 
-            width: 140px; height: 140px;
-            margin: 30px auto;
-        }
 
-        #die {
-            width: 100%; height: 100%;
-            position: relative;
-            transform-style: preserve-3d;
-            transform: rotateX(0deg) rotateY(0deg);
-            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-        }
-
-        .die-face {
-            width: 100%; height: 100%;
-            position: absolute;
+        /* ANIMOVANÁ MINCA */
+        .coin-container { perspective: 1000px; margin: 40px 0; }
+        #coin {
+            width: 130px; height: 130px;
             background: #222;
-            border: 4px solid gold;
-            border-radius: 15px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-weight: bold;
-            box-sizing: border-box;
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
-            backface-visibility: hidden; 
+            border: 6px solid gold;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 1.2rem;
+            color: gold;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
         }
 
-        .face-text {
-            font-size: 1.4rem;
-            color: white;
-            text-transform: uppercase;
-            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+        /* Táto trieda spustí rotáciu */
+        .flipping { animation: flip 0.6s ease-out; }
+        @keyframes flip {
+            0% { transform: rotateY(0); }
+            100% { transform: rotateY(720deg); }
         }
 
-        /* Pozície stien */
-        .face-front { transform: rotateY(0deg) translateZ(70px); }
-        .face-back  { transform: rotateY(180deg) translateZ(70px); }
-        .face-right { transform: rotateY(90deg) translateZ(70px); }
-        .face-left  { transform: rotateY(-90deg) translateZ(70px); }
-        .face-top   { transform: rotateX(90deg) translateZ(70px); }
-        .face-bottom{ transform: rotateX(-90deg) translateZ(70px); }
-
-        /* Farby podľa toho, či je to Výstrel (nepárne) alebo Mierenie (párne) */
-        .face-1, .face-3, .face-5 { border-color: #4caf50; }
-        .face-1 .face-text, .face-3 .face-text, .face-5 .face-text { color: #4caf50; }
-        .face-2, .face-4, .face-6 { border-color: #2196f3; }
-        .face-2 .face-text, .face-4 .face-text, .face-6 .face-text { color: #2196f3; }
-
-        #instruction { background: #1e1e1e; padding: 20px; border-radius: 10px; margin: 20px 0; min-height: 80px; width: 90%; max-width: 400px; border-left: 5px solid gold; line-height: 1.4; font-size: 1.1rem; }
-        .main-btn { background: gold; color: black; border: none; padding: 20px; width: 80%; max-width: 300px; font-size: 1.2rem; font-weight: bold; border-radius: 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-        .controls { display: flex; justify-content: center; gap: 50px; margin-top: 30px; }
-        .score-btn { width: 80px; height: 80px; border-radius: 50%; border: none; font-size: 2.5rem; color: white; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-        .plus { background: green; }
-        .minus { background: red; }
-        .reset { background: none; border: 1px solid #444; color: #666; margin-top: 40px; padding: 5px 10px; cursor: pointer; }
-        .main-btn:active, .score-btn:active, .reset:active { opacity: 0.7; transform: scale(0.95); }
+        #instruction { background: #1e1e1e; padding: 20px; border-radius: 10px; margin: 20px 0; min-height: 80px; width: 90%; max-width: 400px; border-left: 5px solid gold; line-height: 1.4; }
+        .main-btn { background: gold; color: black; border: none; padding: 20px; width: 85%; max-width: 300px; font-size: 1.2rem; font-weight: bold; border-radius: 10px; cursor: pointer; }
+        .controls { display: flex; justify-content: center; gap: 40px; margin-top: 30px; }
+        .score-btn { width: 80px; height: 80px; border-radius: 50%; border: none; font-size: 2.5rem; color: white; }
+        .plus { background: #2e7d32; }
+        .minus { background: #c62828; }
+        .reset { background: none; border: 1px solid #444; color: #666; margin-top: 40px; padding: 8px; cursor: pointer; }
         .lang { margin-bottom: 20px; }
-        .lang button { background: #333; color: white; border: 1px solid #555; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+        .lang button { background: #333; color: white; border: 1px solid #555; padding: 5px 15px; border-radius: 5px; }
         .active { background: gold !important; color: black !important; }
     </style>
 </head>
@@ -85,20 +56,13 @@
         <div class="box"><span class="label">Skóre</span><span id="skore" class="value">0</span></div>
     </div>
 
-    <div class="die-container">
-        <div id="die">
-            <div class="die-face face-front face-1"><span class="face-text">VÝSTREL</span></div>
-            <div class="die-face face-back face-2"><span class="face-text">MIERENIE</span></div>
-            <div class="die-face face-right face-3"><span class="face-text">VÝSTREL</span></div>
-            <div class="die-face face-left face-4"><span class="face-text">MIERENIE</span></div>
-            <div class="die-face face-top face-5"><span class="face-text">VÝSTREL</span></div>
-            <div class="die-face face-bottom face-6"><span class="face-text">MIERENIE</span></div>
-        </div>
+    <div class="coin-container">
+        <div id="coin">?</div>
     </div>
 
     <div id="instruction">Priprav sa na čiaru...</div>
 
-    <button class="main-btn" onclick="hodit()">HODIŤ KOCKOU</button>
+    <button class="main-btn" onclick="hoditMincou()">HODIŤ MINCOU</button>
 
     <div class="controls">
         <button class="score-btn minus" onclick="zmenBod(-1)">-</button>
@@ -109,26 +73,12 @@
 
     <script>
         var body = 0;
-        var hodyCount = 0;
+        var hody = 0;
         var jazyk = 'sk';
-        
-        // ZÁKLADNÉ PREMENNÉ PRE SPRÁVNU ROTÁCIU
-        var baseRotX = 0;
-        var baseRotY = 0;
 
         var texty = {
-            sk: { head: "VÝSTREL", tail: "MIERENIE", shot: "VÝSTREL: Sústreď sa na proces. Plynulý ťah až do prekvapivého výstrelu.", down: "MIERENIE: Zamieriť na stred, drž 6 sekúnd a v kľude zlož.", roll: "HODIŤ KOCKOU", reset: "Naozaj reset?", ready: "Priprav sa na čiaru..." },
-            en: { head: "SHOT", tail: "AIM", shot: "SHOT: Focus on process. Mantra 'Pulling...', surprise release.", down: "AIM: Aim for 6s, hold the pin, then let down safely.", roll: "ROLL DIE", reset: "Really reset?", ready: "Get ready..." }
-        };
-
-        // Opravené matematické uhly, aby zastala kocka presne na správnej stene
-        var faceRotations = {
-            1: [0, 0],     // Predná (Výstrel)
-            2: [0, 180],   // Zadná (Mierenie)
-            3: [0, -90],   // Pravá (Výstrel)
-            4: [0, 90],    // Ľavá (Mierenie)
-            5: [-90, 0],   // Horná (Výstrel)
-            6: [90, 0]     // Dolná (Mierenie)
+            sk: { head: "VÝSTREL", tail: "MIERENIE", shot: "VÝSTREL: Sústreď sa na proces. Plynulý ťah až do prekvapivého výstrelu.", down: "MIERENIE: Zamieriť na stred, drž 6s a v kľude zlož.", roll: "HODIŤ MINCOU", reset: "Naozaj reset?", ready: "Priprav sa..." },
+            en: { head: "SHOT", tail: "AIM", shot: "SHOT: Focus on process. Mantra 'Pulling...', surprise release.", down: "AIM: Aim for 6s, hold the pin, then let down safely.", roll: "FLIP COIN", reset: "Really reset?", ready: "Get ready..." }
         };
 
         function zmenJazyk(p) {
@@ -136,38 +86,34 @@
             document.getElementById('sk').className = (p == 'sk' ? 'active' : '');
             document.getElementById('en').className = (p == 'en' ? 'active' : '');
             document.querySelector('.main-btn').innerText = texty[p].roll;
-            if (hodyCount === 0) document.getElementById('instruction').innerText = texty[p].ready;
-            
-            // PREPÍSANIE TEXTOV PRIAMO NA KOCKE
-            var oddFaces = document.querySelectorAll('.face-1 .face-text, .face-3 .face-text, .face-5 .face-text');
-            var evenFaces = document.querySelectorAll('.face-2 .face-text, .face-4 .face-text, .face-6 .face-text');
-            
-            oddFaces.forEach(function(el) { el.innerText = texty[p].head; });
-            evenFaces.forEach(function(el) { el.innerText = texty[p].tail; });
         }
 
-        function hodit() {
-            var c = document.getElementById('die');
+        function hoditMincou() {
+            var c = document.getElementById('coin');
             var i = document.getElementById('instruction');
             
-            var faceIndex = Math.floor(Math.random() * 6) + 1;
+            // Reštart animácie
+            c.classList.remove('flipping');
+            void c.offsetWidth; 
+            c.classList.add('flipping');
             
-            // OPRAVENÁ LOGIKA: Pridáme len základné otočky, neakumulujeme chyby
-            baseRotX += 720;
-            baseRotY += 720;
-            
-            var targetX = baseRotX + faceRotations[faceIndex][0];
-            var targetY = baseRotY + faceRotations[faceIndex][1];
-            
-            c.style.transform = "rotateX(" + targetX + "deg) rotateY(" + targetY + "deg)";
-            
+            c.innerText = "...";
+            c.style.borderColor = "gold";
+
             setTimeout(function() {
-                hodyCount++;
-                document.getElementById('hody').innerText = hodyCount;
-                
-                // Výsledok podľa steny: Párna (2,4,6) = Mierenie, Nepárna (1,3,5) = Výstrel
-                var resultMsg = (faceIndex % 2 === 0 ? texty[jazyk].down : texty[jazyk].shot);
-                i.innerHTML = "<strong>" + resultMsg + "</strong>";
+                hody++;
+                document.getElementById('hody').innerText = hody;
+                var vysledok = Math.random() < 0.5;
+
+                if (vysledok) {
+                    c.innerText = texty[jazyk].head;
+                    c.style.borderColor = "#4caf50"; // Zelená
+                    i.innerHTML = "<strong>" + texty[jazyk].shot + "</strong>";
+                } else {
+                    c.innerText = texty[jazyk].tail;
+                    c.style.borderColor = "#2196f3"; // Modrá
+                    i.innerHTML = "<strong>" + texty[jazyk].down + "</strong>";
+                }
             }, 600);
         }
 
@@ -178,11 +124,12 @@
 
         function reset() {
             if (confirm(texty[jazyk].reset)) {
-                body = 0; hodyCount = 0; baseRotX = 0; baseRotY = 0;
+                body = 0; hody = 0;
                 document.getElementById('skore').innerText = "0";
                 document.getElementById('hody').innerText = "0";
+                document.getElementById('coin').innerText = "?";
+                document.getElementById('coin').style.borderColor = "gold";
                 document.getElementById('instruction').innerText = texty[jazyk].ready;
-                document.getElementById('die').style.transform = "rotateX(0deg) rotateY(0deg)";
             }
         }
     </script>
