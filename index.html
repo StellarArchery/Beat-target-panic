@@ -11,9 +11,9 @@
         .label { display: block; font-size: 0.7rem; color: #888; text-transform: uppercase; margin-bottom: 5px; }
         .value { font-size: 1.8rem; font-weight: bold; }
         
-        /* ŠTÝL KOCKY A JEJ KONTAJNERA */
+        /* ŠTÝL KOCKY */
         .die-container {
-            perspective: 1000px; /* Pre 3D efekt */
+            perspective: 1000px; 
             width: 140px; height: 140px;
             margin: 30px auto;
         }
@@ -23,7 +23,7 @@
             position: relative;
             transform-style: preserve-3d;
             transform: rotateX(0deg) rotateY(0deg);
-            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Plynulé dotočenie */
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
         }
 
         .die-face {
@@ -36,7 +36,7 @@
             font-weight: bold;
             box-sizing: border-box;
             box-shadow: 0 0 15px rgba(0,0,0,0.5);
-            backface-visibility: hidden; /* Skryje zadné steny */
+            backface-visibility: hidden; 
         }
 
         .face-text {
@@ -46,7 +46,7 @@
             text-shadow: 0 0 10px rgba(255,215,0,0.5);
         }
 
-        /* Umiestnenie stien v 3D priestore */
+        /* Pozície stien */
         .face-front { transform: rotateY(0deg) translateZ(70px); }
         .face-back  { transform: rotateY(180deg) translateZ(70px); }
         .face-right { transform: rotateY(90deg) translateZ(70px); }
@@ -54,7 +54,7 @@
         .face-top   { transform: rotateX(90deg) translateZ(70px); }
         .face-bottom{ transform: rotateX(-90deg) translateZ(70px); }
 
-        /* Obsah stien: Striedame Výstrel a Mierenie pre 50/50 šancu */
+        /* Farby podľa toho, či je to Výstrel (nepárne) alebo Mierenie (párne) */
         .face-1, .face-3, .face-5 { border-color: #4caf50; }
         .face-1 .face-text, .face-3 .face-text, .face-5 .face-text { color: #4caf50; }
         .face-2, .face-4, .face-6 { border-color: #2196f3; }
@@ -87,24 +87,12 @@
 
     <div class="die-container">
         <div id="die">
-            <div class="die-face face-front face-1">
-                <span class="face-text">VÝSTREL</span>
-            </div>
-            <div class="die-face face-back face-2">
-                <span class="face-text">MIERENIE</span>
-            </div>
-            <div class="die-face face-right face-3">
-                <span class="face-text">VÝSTREL</span>
-            </div>
-            <div class="die-face face-left face-4">
-                <span class="face-text">MIERENIE</span>
-            </div>
-            <div class="die-face face-top face-5">
-                <span class="face-text">VÝSTREL</span>
-            </div>
-            <div class="die-face face-bottom face-6">
-                <span class="face-text">MIERENIE</span>
-            </div>
+            <div class="die-face face-front face-1"><span class="face-text">VÝSTREL</span></div>
+            <div class="die-face face-back face-2"><span class="face-text">MIERENIE</span></div>
+            <div class="die-face face-right face-3"><span class="face-text">VÝSTREL</span></div>
+            <div class="die-face face-left face-4"><span class="face-text">MIERENIE</span></div>
+            <div class="die-face face-top face-5"><span class="face-text">VÝSTREL</span></div>
+            <div class="die-face face-bottom face-6"><span class="face-text">MIERENIE</span></div>
         </div>
     </div>
 
@@ -123,22 +111,24 @@
         var body = 0;
         var hodyCount = 0;
         var jazyk = 'sk';
-        var rotaciaX = 0;
-        var rotaciaY = 0;
+        
+        // ZÁKLADNÉ PREMENNÉ PRE SPRÁVNU ROTÁCIU
+        var baseRotX = 0;
+        var baseRotY = 0;
 
         var texty = {
             sk: { head: "VÝSTREL", tail: "MIERENIE", shot: "VÝSTREL: Sústreď sa na proces. Plynulý ťah až do prekvapivého výstrelu.", down: "MIERENIE: Zamieriť na stred, drž 6 sekúnd a v kľude zlož.", roll: "HODIŤ KOCKOU", reset: "Naozaj reset?", ready: "Priprav sa na čiaru..." },
             en: { head: "SHOT", tail: "AIM", shot: "SHOT: Focus on process. Mantra 'Pulling...', surprise release.", down: "AIM: Aim for 6s, hold the pin, then let down safely.", roll: "ROLL DIE", reset: "Really reset?", ready: "Get ready..." }
         };
 
-        // Definované rotácie pre každú stenu
+        // Opravené matematické uhly, aby zastala kocka presne na správnej stene
         var faceRotations = {
-            1: [0, 0], // Predná (Výstrel)
-            2: [0, 180], // Zadná (Mierenie)
-            3: [0, 270], // Pravá (Výstrel)
-            4: [0, 90], // Ľavá (Mierenie)
-            5: [270, 0], // Horná (Výstrel)
-            6: [90, 0] // Dolná (Mierenie)
+            1: [0, 0],     // Predná (Výstrel)
+            2: [0, 180],   // Zadná (Mierenie)
+            3: [0, -90],   // Pravá (Výstrel)
+            4: [0, 90],    // Ľavá (Mierenie)
+            5: [-90, 0],   // Horná (Výstrel)
+            6: [90, 0]     // Dolná (Mierenie)
         };
 
         function zmenJazyk(p) {
@@ -148,33 +138,35 @@
             document.querySelector('.main-btn').innerText = texty[p].roll;
             if (hodyCount === 0) document.getElementById('instruction').innerText = texty[p].ready;
             
-            // Update die face text to be more styled, just "VÝSTREL" / "MIERENIE"
-            // (We could keep "VÝSTREL" even in English for a pure copy-paste prompt if desired)
+            // PREPÍSANIE TEXTOV PRIAMO NA KOCKE
+            var oddFaces = document.querySelectorAll('.face-1 .face-text, .face-3 .face-text, .face-5 .face-text');
+            var evenFaces = document.querySelectorAll('.face-2 .face-text, .face-4 .face-text, .face-6 .face-text');
+            
+            oddFaces.forEach(function(el) { el.innerText = texty[p].head; });
+            evenFaces.forEach(function(el) { el.innerText = texty[p].tail; });
         }
 
         function hodit() {
             var c = document.getElementById('die');
             var i = document.getElementById('instruction');
             
-            // 1. Získame náhodnú stenu od 1 po 6
             var faceIndex = Math.floor(Math.random() * 6) + 1;
             
-            // 2. Pridáme 720 stupňov (2 otočky) pre efekt točenia k finálnej rotácii
-            rotaciaX += (faceRotations[faceIndex][0] + 720);
-            rotaciaY += (faceRotations[faceIndex][1] + 720);
+            // OPRAVENÁ LOGIKA: Pridáme len základné otočky, neakumulujeme chyby
+            baseRotX += 720;
+            baseRotY += 720;
             
-            // 3. Roztočíme kocku do finálnej polohy
-            c.style.transform = "rotateX(" + rotaciaX + "deg) rotateY(" + rotaciaY + "deg)";
+            var targetX = baseRotX + faceRotations[faceIndex][0];
+            var targetY = baseRotY + faceRotations[faceIndex][1];
             
-            // Počkáme 600ms, kým animácia prebehne, potom ukážeme výsledok
+            c.style.transform = "rotateX(" + targetX + "deg) rotateY(" + targetY + "deg)";
+            
             setTimeout(function() {
                 hodyCount++;
                 document.getElementById('hody').innerText = hodyCount;
                 
-                // Určíme výsledok na základe steny (párna = Mierenie, nepárna = Výstrel)
-                var result = (faceIndex % 2 === 0 ? texty[jazyk].tail : texty[jazyk].head);
+                // Výsledok podľa steny: Párna (2,4,6) = Mierenie, Nepárna (1,3,5) = Výstrel
                 var resultMsg = (faceIndex % 2 === 0 ? texty[jazyk].down : texty[jazyk].shot);
-
                 i.innerHTML = "<strong>" + resultMsg + "</strong>";
             }, 600);
         }
@@ -186,7 +178,7 @@
 
         function reset() {
             if (confirm(texty[jazyk].reset)) {
-                body = 0; hodyCount = 0; rotaciaX = 0; rotaciaY = 0;
+                body = 0; hodyCount = 0; baseRotX = 0; baseRotY = 0;
                 document.getElementById('skore').innerText = "0";
                 document.getElementById('hody').innerText = "0";
                 document.getElementById('instruction').innerText = texty[jazyk].ready;
